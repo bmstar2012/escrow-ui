@@ -108,14 +108,14 @@ export default defineComponent({
 
     const onInitEscrow = async () => {
       try {
-        const { 
+        /*const {
           escrowAccountPubkey,
           isInitialized,
           initializerAccountPubkey,
           XTokenTempAccountPubkey,
           initializerYTokenAccount,
           expectedAmount
-        } = await initEscrow(
+        } =*/ await initEscrow(
           formState.privateKey,
           formState.aliceXTokenAccountPubkey,
           formState.amountXTokensToSendToEscrow,
@@ -123,12 +123,12 @@ export default defineComponent({
           formState.amountYTokensAliceExpects,
           formState.programId
         );
-        escrowState.escrowAccountPubkey = escrowAccountPubkey;
-        escrowState.isInitialized = isInitialized;
-        escrowState.initializerAccountPubkey = initializerAccountPubkey;
-        escrowState.XTokenTempAccountPubkey = XTokenTempAccountPubkey;
-        escrowState.initializerYTokenAccount = initializerYTokenAccount;
-        escrowState.expectedAmount = expectedAmount;
+        // escrowState.escrowAccountPubkey = escrowAccountPubkey;
+        // escrowState.isInitialized = isInitialized;
+        // escrowState.initializerAccountPubkey = initializerAccountPubkey;
+        // escrowState.XTokenTempAccountPubkey = XTokenTempAccountPubkey;
+        // escrowState.initializerYTokenAccount = initializerYTokenAccount;
+        // escrowState.expectedAmount = expectedAmount;
       } catch(err) {
         if (err instanceof Error) {
           alert(err.message);
