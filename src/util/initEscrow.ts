@@ -18,17 +18,22 @@ export const initEscrow = async (
     initializerXTokenAccountPubkeyString = "HwkG2NmHfEqtn2hRLrsSu35HFSiz834QUSPoX7ihnyb5"; //X token acc
     amountXTokensToSendToEscrow = 10;
     escrowProgramIdString = "ArKNXpTq2o41N2XsujRuLqQehZUb5bRVFXceWqvH9QWY";
+    initializerReceivingTokenAccountPubkeyString = "5CNuZtJ5ksxV6iAAFacu91PYoptzGDLY9exuentmuey3";
+    expectedAmount = 15;
 
     const initializerXTokenAccountPubkey = new PublicKey(initializerXTokenAccountPubkeyString);
 
     console.log("Step1: ");
     // let accountInfo = (await connection.getAccountInfo(initializerXTokenAccountPubkey, 'singleGossip'));
     // console.log("accountInfo", accountInfo);
-    // let parsedAccount = (await connection.getParsedAccountInfo(initializerXTokenAccountPubkey, 'singleGossip'));
-    // console.log("parsedAccount", parsedAccount);
+    let parsedAccount = (await connection.getParsedAccountInfo(initializerXTokenAccountPubkey, 'singleGossip'));
+    console.log("parsedXTokenAccount", parsedAccount);
     // return;
+
     //@ts-expect-error
-    const XTokenMintAccountPubkey = new PublicKey((await connection.getParsedAccountInfo(initializerXTokenAccountPubkey, 'singleGossip')).value!.data.parsed.info.mint);
+    const XTokenMintAccountPubkey = new PublicKey(parsedAccount.value!.data.parsed.info.mint);
+    let parsedXTokenMintAccount = (await connection.getParsedAccountInfo(XTokenMintAccountPubkey, 'singleGossip'));
+    console.log("parsedXTokenMintAccount", parsedXTokenMintAccount);
 
     const privateKeyDecoded = privateKeyByteArray.split(',').map(s => parseInt(s));
     const initializerAccount = new Account(privateKeyDecoded);
@@ -59,20 +64,21 @@ export const initEscrow = async (
     console.log("transferXTokensToTempAccIx: TransactionInstruction", initTempAccountIx);
 
 
-    console.log("Step3 Send Transaction");
-    const tx1 = new Transaction()
-        .add(createTempTokenAccountIx, initTempAccountIx, transferXTokensToTempAccIx);
-    await connection.sendTransaction(tx1,
-        [initializerAccount, tempTokenAccount],
-        {skipPreflight: false, preflightCommitment: 'singleGossip'});
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    let parsedTempAccount = (await connection.getAccountInfo(tempTokenAccount.publicKey, 'singleGossip'))!;
-    let parsedInitializerAccount = (await connection.getAccountInfo(initializerAccount.publicKey, 'singleGossip'))!;
-    console.log("parsedTempAccount: ", parsedTempAccount, "parsedInitializerAccount: ", parsedInitializerAccount);
-    
-    return;
+    // console.log("Step3 Send Transaction");
+    // const tx1 = new Transaction()
+    //     .add(createTempTokenAccountIx, initTempAccountIx, transferXTokensToTempAccIx);
+    // await connection.sendTransaction(tx1,
+    //     [initializerAccount, tempTokenAccount],
+    //     {skipPreflight: false, preflightCommitment: 'singleGossip'});
+    //
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    //
+    // let parsedTempAccount = (await connection.getParsedAccountInfo(tempTokenAccount.publicKey, 'singleGossip'))!;
+    // let parsedInitializerAccount = (await connection.getParsedAccountInfo(initializerXTokenAccountPubkey, 'singleGossip'))!;
+    // parsedXTokenMintAccount = (await connection.getParsedAccountInfo(XTokenMintAccountPubkey, 'singleGossip'));
+    // console.log("parsedTempAccount: ", parsedTempAccount, "parsedInitializerAccount: ", parsedInitializerAccount, "parsedXTokenMintAccount", parsedXTokenMintAccount);
+    //
+    // return;
 
     console.log("Step2 - 4 create Instruction to create Escrow Account"); //TransactionInstruction
     const escrowAccount = new Account();
@@ -106,12 +112,24 @@ export const initEscrow = async (
         .add(createTempTokenAccountIx, initTempAccountIx, transferXTokensToTempAccIx, createEscrowAccountIx, initEscrowIx);
     await connection.sendTransaction(tx,
         [initializerAccount, tempTokenAccount, escrowAccount],
+        // [initializerAccount],
         {skipPreflight: false, preflightCommitment: 'singleGossip'});
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    let parsedTempAccount = (await connection.getParsedAccountInfo(tempTokenAccount.publicKey, 'singleGossip'))!;
+    let parsedInitializerAccount = (await connection.getParsedAccountInfo(initializerXTokenAccountPubkey, 'singleGossip'))!;
+    // parsedXTokenMintAccount = (await connection.getParsedAccountInfo(XTokenMintAccountPubkey, 'singleGossip'));
+    let parsedEscrowAccount = (await connection.getParsedAccountInfo(escrowAccount.publicKey, 'singleGossip'));
+    console.log("parsedTempAccount: ", parsedTempAccount);
+    console.log("parsedInitializerAccount: ", parsedInitializerAccount);
+    // console.log("parsedXTokenMintAccount", parsedXTokenMintAccount);
+    console.log("escrowAccount.publicKey", escrowAccount.publicKey.toBase58(), "parsedEscrowAccount", parsedEscrowAccount);
+
     const encodedEscrowState = (await connection.getAccountInfo(escrowAccount.publicKey, 'singleGossip'))!.data;
     const decodedEscrowState = ESCROW_ACCOUNT_DATA_LAYOUT.decode(encodedEscrowState) as EscrowLayout;
+    console.log("decodedEscrowState", decodedEscrowState);
+    return;
     return {
         escrowAccountPubkey: escrowAccount.publicKey.toBase58(),
         isInitialized: !!decodedEscrowState.isInitialized,
