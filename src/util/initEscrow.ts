@@ -129,7 +129,7 @@ export const initEscrow = async (
     const encodedEscrowState = (await connection.getAccountInfo(escrowAccount.publicKey, 'singleGossip'))!.data;
     const decodedEscrowState = ESCROW_ACCOUNT_DATA_LAYOUT.decode(encodedEscrowState) as EscrowLayout;
     console.log("decodedEscrowState", decodedEscrowState);
-    return;
+    // return;
     return {
         escrowAccountPubkey: escrowAccount.publicKey.toBase58(),
         isInitialized: !!decodedEscrowState.isInitialized,
